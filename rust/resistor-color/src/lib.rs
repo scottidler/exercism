@@ -1,5 +1,5 @@
 use enum_iterator::{all, Sequence};
-use int_enum::{IntEnum, IntEnumError};
+use int_enum::IntEnum;
 
 #[repr(u32)]
 #[derive(Clone, Copy, Debug, Eq, PartialEq, IntEnum, Sequence)]
