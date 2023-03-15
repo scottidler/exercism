@@ -294,9 +294,14 @@ impl Alphametic {
             .map(|t| t.char(place).unwrap())
             .collect()
     }
-    pub fn insert(&mut self, permutation: Vec<(char, u8)>) {
+    pub fn insert(&mut self, permutation: &Vec<(char, u8)>) {
         for (c, n) in permutation {
-            self.solution.insert(c, n);
+            self.solution.insert(*c, *n);
+        }
+    }
+    pub fn remove(&mut self, permutation: &Vec<(char, u8)>) {
+        for (c, _) in permutation {
+            self.solution.remove(&c);
         }
     }
     pub fn reset(&mut self) {
@@ -336,11 +341,16 @@ impl Alphametic {
         let mut rhs = 0;
         let mut carry = 0;
         for place in 0..places {
-            let chars = self.chars(place);
+            let mut chars = self.chars(place);
             println!("place={} chars={:?}", place, chars);
+            chars = chars
+                .iter()
+                .filter(|&&c| !self.solution.contains_key(&c))
+                .cloned()
+                .collect();
             for permutation in self.permutations(chars) {
                 println!("  permutation={:?}", permutation);
-                self.insert(permutation);
+                self.insert(&permutation);
                 lhs = self.evaulate(place, self.addends2()) + carry;
                 rhs = self.evaulate(place, vec![self.sum2()]);
                 println!("  lhs={}, rhs={}", lhs, rhs);
@@ -355,7 +365,7 @@ impl Alphametic {
                     break;
                 } else {
                     println!("  reset");
-                    self.reset();
+                    self.remove(&permutation);
                 }
             }
         }

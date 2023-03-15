@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use alphametics::*;
 
 #[test]
+#[ignore]
 fn test_alphametic_new() {
     let a = Alphametic::new("I + BB == ILL");
     let expected = vec![Term::new("I"), Term::new("BB"), Term::new("ILL")];
@@ -10,6 +11,7 @@ fn test_alphametic_new() {
 }
 
 #[test]
+#[ignore]
 fn test_alphametic_chars1() {
     let a = Alphametic::new("I + BB == ILL");
     let expected = vec!['I', 'B', 'L'];
@@ -17,6 +19,7 @@ fn test_alphametic_chars1() {
 }
 
 #[test]
+#[ignore]
 fn test_alphametic_chars2() {
     let a = Alphametic::new("I + BB == ILL");
     let expected = vec!['B', 'L'];
@@ -24,6 +27,7 @@ fn test_alphametic_chars2() {
 }
 
 #[test]
+#[ignore]
 fn test_alphametic_chars3() {
     let a = Alphametic::new("I + BB == ILL");
     let expected = vec!['I'];
@@ -31,6 +35,7 @@ fn test_alphametic_chars3() {
 }
 
 #[test]
+#[ignore]
 fn test_alphametic_chars4() {
     let a = Alphametic::new("I + BB == ILL");
     let expected = vec![];
@@ -38,11 +43,12 @@ fn test_alphametic_chars4() {
 }
 
 #[test]
+#[ignore]
 fn test_alphametic_evaluate_place1() {
     let mut alphametic = Alphametic::new("I + BB == ILL");
     let place = 0;
     let permutation = vec![('I', 1), ('B', 9), ('L', 0)];
-    alphametic.insert(permutation);
+    alphametic.insert(&permutation);
     let terms: Vec<&Term> = alphametic.addends2();
     let actual = alphametic.evaulate(place, terms);
     let expected = 10;
@@ -50,12 +56,13 @@ fn test_alphametic_evaluate_place1() {
 }
 
 #[test]
+#[ignore]
 fn test_alphametic_evaluate_place2() {
     let mut alphametic = Alphametic::new("I + BB == ILL");
     println!("{}", alphametic);
     let place = 1;
     let permutation = vec![('I', 1), ('B', 9), ('L', 0)];
-    alphametic.insert(permutation);
+    alphametic.insert(&permutation);
     println!("{}", alphametic);
     let terms: Vec<&Term> = alphametic.addends2();
     let actual = alphametic.evaulate(place, terms);
@@ -77,7 +84,7 @@ fn assert_alphametic_solution_eq(puzzle: &str, solution: &[(char, u8)]) {
 }
 
 #[test]
-#[ignore]
+//#[ignore]
 fn test_with_three_letters() {
     assert_alphametic_solution_eq("I + BB == ILL", &[('I', 1), ('B', 9), ('L', 0)]);
 }
