@@ -1,6 +1,113 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use alphametics::*;
+/*
+#[test]
+fn test_term() {
+    let input = "ABC";
+    let t = Term::new("ABC");
+    let s = Solution::from_iter(vec![('A', 1), ('B', 2), ('C', 3)]);
+    for (i, c) in input.chars().enumerate() {
+        let v = t.evaluate(i, &s);
+        assert_eq!(v, Some(3 - i as u8));
+    }
+}
+
+#[test]
+fn test_term2() {
+    let t1 = Term::new("I");
+    let t2 = Term::new("BB");
+    let t3 = Term::new("ILL");
+    let terms = vec![t1, t2, t3];
+    let s = Solution::from_iter(vec![('I', 1), ('B', 9), ('L', 0)]);
+    let (sum, carry) = Term::add(0, &terms[..2], 0, &s);
+    assert_eq!(sum, 0);
+    assert_eq!(carry, 1);
+}
+
+#[test]
+#[ignore]
+fn test_term3() {
+    let t1 = Term::new("I");
+    let t2 = Term::new("BB");
+    let t3 = Term::new("ILL");
+    let terms = vec![t1, t2, t3];
+    let s = Solution::from_iter(vec![('I', 1), ('B', 9), ('L', 0)]);
+    let mut sum = 0;
+    let mut total = 0;
+    let mut carry = 0;
+    for p in 0..2 {
+        (sum, carry) = Term::add(1, &terms[..2], carry, &s);
+        total += sum * 10u32.pow(p as u32);
+    }
+    assert_eq!(carry, 1);
+    assert_eq!(total, 100);
+    if carry > 0 {
+        total += carry;
+    }
+    assert_eq!(total, 100);
+}
+
+#[test]
+fn test_term4() {
+    let addends = vec![
+        Term::new("I"),
+        Term::new("BB"),
+    ];
+    let result = Term::new("ILL");
+    let solution = Solution::from_iter(vec![('I', 1), ('B', 9), ('L', 0)]);
+    for place in 0..result.places() {
+        println!("place: {}", place);
+        if let Some(carry) = Term::validate(place, &addends, &result, &solution) {
+            assert_eq!(carry, 1);
+        } else {
+            assert!(false);
+        }
+    }
+}
+*/
+
+#[test]
+fn test_apple_banana() {
+    let banana = Banana::new(13);
+    let apple = Apple::new(&banana);
+    assert_eq!(apple.integer(), 13);
+}
+
+#[test]
+fn test_alphametic() {
+    let a = Alphametic::new("I + BB == ILL");
+    assert_eq!(a.columns.len(), 3);
+}
+
+#[test]
+fn test_column() {
+    let c1 = Column::new(vec!['L', 'B', 'I']);
+    let s = Solution::from_iter(vec![('I', 1), ('B', 9), ('L', 0)]);
+    if let Some(carry) = c1.evaluate(0, &s) {
+        assert_eq!(carry, 1);
+    } else {
+        assert!(false);
+    }
+    assert!(true);
+}
+
+#[test]
+fn test_alphametic_Permutation3() {
+    //let chars = vec!['A', 'B', 'C'];
+    //let chars = chars.into_iter().map(|c| (c, 0)).collect();
+    let chars = vec!['A', 'B', 'C'];
+    let mut p = Permutation3::new(chars);
+    let mut pairs: Option<Vec<(char, u8)>> = p.next()
+        .map(|v| v.into_iter().map(|(c, i)| (c, i as u8)).collect());
+    if let Some(ref mut p) = pairs {
+        p.sort();
+        assert_eq!(p, &vec![('A', 0), ('B', 1), ('C', 2)]);
+    } else {
+        assert!(false);
+    }
+}
+/*
 
 #[test]
 #[ignore]
@@ -69,11 +176,7 @@ fn test_alphametic_evaluate_place2() {
     let expected = 9;
     assert_eq!(actual, expected);
 }
-
-
-
-
-/////////////
+*/
 
 
 
