@@ -66,7 +66,7 @@ fn test_term4() {
     }
 }
 */
-
+/*
 #[test]
 fn test_apple_banana() {
     let banana = Banana::new(13);
@@ -91,6 +91,7 @@ fn test_column() {
     }
     assert!(true);
 }
+*/
 /*
 #[test]
 fn test_permutation4() {
@@ -197,35 +198,52 @@ fn test_alphametic_evaluate_place2() {
 */
 
 
+fn hashmap_to_vec_of_tuples(hashmap: Option<HashMap<char, u8>>) -> Option<Vec<(char, u8)>> {
+    // let mut vec: Vec<(char, u8)> = hashmap.iter().map(|(&k, &v)| (k, v)).collect();
+    // vec.sort();
+    // vec
+    hashmap.map(|hm| {
+        let mut vec: Vec<(char, u8)> = hm.iter().map(|(&k, &v)| (k, v)).collect();
+        vec.sort();
+        vec
+    })
+}
+
+fn array_to_vec_of_tuples(array: Option<&[(char, u8)]>) -> Option<Vec<(char, u8)>> {
+    array.map(|a| {
+        let mut vec: Vec<(char, u8)> = a.iter().map(|&(k, v)| (k, v)).collect();
+        vec.sort();
+        vec
+    })
+}
 
 fn assert_alphametic_solution_eq(puzzle: &str, solution: &[(char, u8)]) {
-    let answer = alphametics::solve(puzzle);
-    let solution: HashMap<char, u8> = solution.iter().cloned().collect();
-    assert_eq!(answer, Some(solution));
+    //let answer = alphametics::solve(puzzle);
+    //let solution: HashMap<char, u8> = solution.iter().cloned().collect();
+    //assert_eq!(answer, Some(solution));
+    let answer = hashmap_to_vec_of_tuples(alphametics::solve(puzzle));
+    let solution = array_to_vec_of_tuples(Some(solution));
+    assert_eq!(answer, solution);
 }
 
 #[test]
-//#[ignore]
 fn test_with_three_letters() {
     assert_alphametic_solution_eq("I + BB == ILL", &[('I', 1), ('B', 9), ('L', 0)]);
 }
 
 #[test]
-#[ignore]
 fn test_must_have_unique_value_for_each_letter() {
     let answer = alphametics::solve("A == B");
     assert_eq!(answer, None);
 }
 
 #[test]
-#[ignore]
 fn test_leading_zero_solution_is_invalid() {
     let answer = alphametics::solve("ACA + DD == BD");
     assert_eq!(answer, None);
 }
 
 #[test]
-#[ignore]
 fn test_sum_must_be_wide_enough() {
     let answer = alphametics::solve("ABC + DEF == GH");
     assert_eq!(answer, None);
