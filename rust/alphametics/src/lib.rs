@@ -1,4 +1,7 @@
 use std::collections::{HashMap, HashSet};
+use std::fmt;
+
+use itertools::Itertools;
 
 fn insert_char_if_not_seen(s: &str, set: &mut HashSet<char>) {
     for c in s.chars() {
@@ -34,6 +37,40 @@ fn is_valid(map: &HashMap<char, u8>, inputs: &Vec<&str>, result: &str) -> bool {
     }
     true
 }
+
+pub fn solve_chibbyone(input: &str) -> Option<HashMap<char, u8>> {
+    // The HashMap must be mutable
+    let mut set: HashSet<char> = HashSet::new();
+    // Get all the unique letters to create the hashmap
+    let input_and_result: Vec<&str> = input.split("==").collect();
+    // If any of the input or result is missing then there can be no solution and therefore we
+    // return None
+    // The input is split into a vector of &str since there could be > 1 inputs
+    let input: Vec<&str> = match input_and_result.first() {
+        Some(v) => v.split('+').map(|v| v.trim()).collect(),
+        None => {
+            return None;
+        }
+    };
+    // The result is handled as a &str since it will only be 1 result
+    let result = match input_and_result.last() {
+        Some(v) => v.trim(),
+        None => {
+            return None;
+        }
+    };
+    // There can be at most 10 entries to the hashmap since there can only be ten kinds of digits.
+    insert_char_if_not_seen(result, &mut set);
+    for s in &input {
+        insert_char_if_not_seen(s, &mut set);
+    }
+    // We iterate over each kind of
+    let mut perm = Permutation::new(&set);
+    perm.find(|hashmap| {
+        is_valid(hashmap, &input, result) && convert_to_numbers_and_check_result(&input, result, hashmap)
+    })
+}
+
 #[derive(Debug)]
 struct Permutation {
     letters: Vec<char>,
@@ -51,8 +88,15 @@ impl Permutation {
             }
             result
         }
+        // sorted vec of chars
+        let sorted = {
+            let mut v: Vec<char> = s.iter().copied().collect();
+            v.sort();
+            v
+        };
         Self {
-            letters: s.iter().copied().collect(),
+            //letters: s.iter().copied().collect(),
+            letters: sorted,
             count: 0,
             max: combinations(s.len()),
             current_values: (0..s.len()).rev().map(|x| x as u8).collect(),
@@ -103,37 +147,104 @@ impl Iterator for Permutation {
         }
     }
 }
-pub fn solve_chibbyone(input: &str) -> Option<HashMap<char, u8>> {
-    // The HashMap must be mutable
-    let mut set: HashSet<char> = HashSet::new();
-    // Get all the unique letters to create the hashmap
-    let input_and_result: Vec<&str> = input.split("==").collect();
-    // If any of the input or result is missing then there can be no solution and therefore we
-    // return None
-    // The input is split into a vector of &str since there could be > 1 inputs
-    let input: Vec<&str> = match input_and_result.first() {
-        Some(v) => v.split('+').map(|v| v.trim()).collect(),
-        None => {
-            return None;
+#[derive(Debug)]
+pub struct Permutation2 {
+    max: usize,
+    count: usize,
+    chars: Vec<char>,
+    values: Vec<u8>,
+    accepted: Vec<(char, u8)>,
+}
+impl Permutation2 {
+    pub fn new(chars: &Vec<char>) -> Self {
+        let accepted = vec![];
+        let numbers = available_numbers(&accepted);
+        let max = max_permutations(&chars, &numbers);
+        let values = starting_values(&chars, &numbers);
+        Self {
+            max: max,
+            count: 0,
+            chars: chars.clone(),
+            values: values,
+            accepted: accepted,
         }
-    };
-    // The result is handled as a &str since it will only be 1 result
-    let result = match input_and_result.last() {
-        Some(v) => v.trim(),
-        None => {
-            return None;
-        }
-    };
-    // There can be at most 10 entries to the hashmap since there can only be ten kinds of digits.
-    insert_char_if_not_seen(result, &mut set);
-    for s in &input {
-        insert_char_if_not_seen(s, &mut set);
     }
-    // We iterate over each kind of
-    let mut perm = Permutation::new(&set);
-    perm.find(|hashmap| {
-        is_valid(hashmap, &input, result) && convert_to_numbers_and_check_result(&input, result, hashmap)
-    })
+    pub fn push(&self, chars: &Vec<char>, solution: &Solution) -> Self {
+        let mut accepted = self.accepted.clone();
+        accepted.extend(hashmap_to_sorted_vec_of_tuples(&solution));
+        let numbers = available_numbers(&accepted);
+        let max = max_permutations(&chars, &numbers);
+        let values = starting_values(&chars, &numbers);
+        Self {
+            chars: chars.clone(),
+            count: 0,
+            max: max,
+            values: values,
+            accepted: accepted.clone(),
+        }
+    }
+    fn build_hashmap(&self) -> HashMap<char, u8> {
+        let hashmap = self.accepted.clone();
+        hashmap
+            .into_iter()
+            .chain(self.chars.iter().copied().zip(self.values.iter().copied()))
+            .collect()
+    }
+    fn find_next_combination(&mut self, index: usize) {
+        if index >= self.values.len() {
+            return;
+        }
+        let mut next_digit = (self.values[index] + 1) % 10;
+        if next_digit == 0 {
+            self.find_next_combination(index + 1);
+        }
+        while self.values[index + 1..].contains(&next_digit) {
+            next_digit = (next_digit + 1) % 10;
+            if next_digit == 0 {
+                self.find_next_combination(index + 1);
+            }
+        }
+        self.values[index] = next_digit;
+    }
+    fn next_hashmap(&mut self) -> HashMap<char, u8> {
+        self.find_next_combination(0);
+        self.build_hashmap()
+        // self.chars
+        //     .iter()
+        //     .copied()
+        //     .zip(self.values.iter().copied())
+        //     .collect()
+    }
+}
+impl Iterator for Permutation2 {
+    type Item = HashMap<char, u8>;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.count == self.max {
+            None
+        } else if self.count == 0 {
+            self.count += 1;
+            Some(
+                self.build_hashmap()
+                // self.chars
+                //     .iter()
+                //     .copied()
+                //     .zip(self.values.iter().copied())
+                //     .collect(),
+            )
+        } else {
+            self.count += 1;
+            Some(self.next_hashmap())
+        }
+    }
+}
+impl fmt::Display for Permutation2 {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(
+            f,
+            "Permutation2(chars={:?}, count={}, max={}, values={:?}, accepted={:?})",
+            self.chars, self.count, self.max, self.values, self.accepted
+        )
+    }
 }
 ///////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -157,10 +268,14 @@ fn input_to_terms(input: &str) -> Option<Vec<String>> {
     }
     Some(terms)
 }
+//no duplicate chars
 fn terms_to_unique_chars(terms: &Vec<String>) -> Vec<char> {
     terms
         .iter()
         .flat_map(|s| s.chars())
+        .collect::<HashSet<char>>()
+        .into_iter()
+        .sorted()
         .collect()
 }
 
@@ -178,70 +293,40 @@ fn terms_to_columns(terms: &Vec<String>) -> Vec<Vec<char>> {
     columns
 }
 
-fn evaluate_column(column: &Vec<char>, carry: u8, map: &HashMap<char, u8>, debug: bool) -> Option<u8> {
-    if debug {
-        println!("column: {:?}", column);
-    }
+fn evaluate_column(column: &Vec<char>, carry: u8, map: &HashMap<char, u8>) -> Option<u8> {
     let terms = column
         .iter()
         .map(|c| map.get(c).unwrap())
         .copied()
         .collect::<Vec<u8>>();
-    if debug {
-        println!("terms: {:?}", terms);
-    }
     let mut sum = carry;
     let mut carry = 0;
     for term in terms[1..].iter() {
         sum += term;
     }
-    if debug {
-        println!("sum: {}", sum);
-    }
     if sum > 9 {
         carry = sum / 10;
         sum = sum % 10;
     }
-    if debug {
-        println!("sum: {} carry: {}", sum, carry);
-    }
     if sum == terms[0] {
-        if debug {
-            println!(">success");
-        }
         Some(carry)
     } else {
-        if debug {
-            println!(">failed");
-        }
         None
     }
 }
 
-fn evaluate_columns(columns: &Vec<Vec<char>>, map: &HashMap<char, u8>, debug: bool) -> bool {
+fn evaluate_columns(columns: &Vec<Vec<char>>, map: &HashMap<char, u8>) -> bool {
     let mut carry = 0;
     for column in columns {
-        if let Some(c) = evaluate_column(column, carry, map, debug) {
+        if let Some(c) = evaluate_column(column, carry, map) {
             carry = c;
-            if debug {
-                println!("carry: {}", carry);
-            }
         } else {
-            if debug {
-                println!("failed");
-            }
             return false;
         }
     }
     if carry == 0 {
-        if debug {
-            println!("success");
-        }
         true
     } else {
-        if debug {
-            println!("failed2");
-        }
         false
     }
 }
@@ -270,109 +355,37 @@ fn chars_to_values(terms: &Vec<String>, map: &HashMap<char, u8>) -> Vec<String> 
         .collect::<Vec<String>>()
 }
 
-fn available_values(chars: &Vec<char>, accepted: &Vec<(char, u8)>) -> Vec<u8> {
+fn available_numbers(accepted: &Vec<(char, u8)>) -> Vec<u8> {
     (0..10)
-        .filter(|v| !accepted.iter().any(|(_, x)| x == v))
+        .filter(|n| !accepted.iter().any(|(_, v)| *v == *n))
+        .collect()
+}
+
+fn starting_values(chars: &Vec<char>, numbers: &Vec<u8>) -> Vec<u8> {
+    numbers
+        .iter()
         .take(chars.len())
+        .rev()
+        .map(|v| *v)
         .collect::<Vec<u8>>()
 }
 
 pub fn solve(input: &str) -> Option<HashMap<char, u8>> {
     let terms = input_to_terms(input)?;
     let chars = terms_to_unique_chars(&terms);
+    let chars2 = chars.clone().into_iter().collect::<HashSet<char>>();
     let columns = terms_to_columns(&terms);
-    let p2 = Permutation2::new(&chars);
-    let mut debug = false;
-    for (i, solution) in p2.enumerate() {
+    let p =Permutation::new(&chars2);
+    //let p =Permutation2::new(&chars);
+    println!("p: {:#?}", p);
+    for (i, solution) in p.enumerate() {
         println!("{i}: {:?}", hashmap_to_sorted_vec_of_tuples(&solution));
-        if evaluate_columns(&columns, &solution, debug) {
+        if evaluate_columns(&columns, &solution) {
             if chars_to_values(&terms, &solution).iter().any(|s| s.starts_with('0')) {
                 return None;
             }
             return Some(solution);
         }
-        debug = false;
     }
-    //println!("max: {}", max);
     None
-}
-
-#[derive(Debug)]
-struct Permutation2 {
-    chars: Vec<char>,
-    count: usize,
-    max: usize,
-    values: Vec<u8>,
-    accepted: Vec<(char, u8)>,
-}
-impl Permutation2 {
-    pub fn new(chars: &Vec<char>) -> Self {
-        let accepted = vec![];
-        let values = available_values(&chars, &accepted);
-        let max = max_permutations(&chars, &values);
-        Self {
-            chars: chars.clone(),
-            count: 0,
-            max: max,
-            values: values,
-            accepted: accepted,
-        }
-    }
-    pub fn push(&self, chars: &Vec<char>, solution: &Solution) -> Self {
-        let mut accepted = self.accepted.clone();
-        accepted.extend(hashmap_to_sorted_vec_of_tuples(&solution));
-        let values = available_values(&chars, &accepted);
-        let max = max_permutations(&chars, &values);
-        Self {
-            chars: chars.clone(),
-            count: 0,
-            max: max,
-            values: values,
-            accepted: accepted.clone(),
-        }
-    }
-    fn find_next_combination(&mut self, index: usize) {
-        if index >= self.values.len() {
-            return;
-        }
-        let mut next_digit = (self.values[index] + 1) % 10;
-        if next_digit == 0 {
-            self.find_next_combination(index + 1);
-        }
-        while self.values[index + 1..].contains(&next_digit) {
-            next_digit = (next_digit + 1) % 10;
-            if next_digit == 0 {
-                self.find_next_combination(index + 1);
-            }
-        }
-        self.values[index] = next_digit;
-    }
-    fn next_hashmap(&mut self) -> HashMap<char, u8> {
-        self.find_next_combination(0);
-        self.chars
-            .iter()
-            .copied()
-            .zip(self.values.iter().copied())
-            .collect()
-    }
-}
-impl Iterator for Permutation2 {
-    type Item = HashMap<char, u8>;
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.count == self.max {
-            None
-        } else if self.count == 0 {
-            self.count += 1;
-            Some(
-                self.chars
-                    .iter()
-                    .copied()
-                    .zip(self.values.iter().copied())
-                    .collect(),
-            )
-        } else {
-            self.count += 1;
-            Some(self.next_hashmap())
-        }
-    }
 }

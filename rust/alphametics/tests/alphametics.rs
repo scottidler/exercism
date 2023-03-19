@@ -1,6 +1,16 @@
 use std::collections::{HashMap, HashSet};
 
 use alphametics::*;
+
+#[test]
+#[ignore]
+fn test_permutation2() {
+    let chars = vec!['A', 'B', 'C'];
+    let p = Permutation2::new(&chars);
+    assert!(false);
+}
+
+
 /*
 #[test]
 fn test_term() {
@@ -250,7 +260,6 @@ fn test_sum_must_be_wide_enough() {
 }
 
 #[test]
-#[ignore]
 fn puzzle_with_two_digits_final_carry() {
     assert_alphametic_solution_eq(
         "A + A + A + A + A + A + A + A + A + A + A + B == BCC",
@@ -259,16 +268,16 @@ fn puzzle_with_two_digits_final_carry() {
 }
 
 #[test]
-#[ignore]
 fn test_puzzle_with_four_letters() {
     assert_alphametic_solution_eq("AS + A == MOM", &[('A', 9), ('S', 2), ('M', 1), ('O', 0)]);
 }
 
 #[test]
-#[ignore]
+//#[ignore]
 fn test_puzzle_with_six_letters() {
     assert_alphametic_solution_eq(
         "NO + NO + TOO == LATE",
+        //&[('N', 7), ('O', 4), ('T', 9), ('L', 1), ('A', 0), ('E', 2)],
         &[('N', 7), ('O', 4), ('T', 9), ('L', 1), ('A', 0), ('E', 2)],
     );
 }
