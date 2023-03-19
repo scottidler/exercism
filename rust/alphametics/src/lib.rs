@@ -235,7 +235,6 @@ impl fmt::Display for Permutation2 {
     }
 }
 
-// const list of delimeters
 const DELIMITERS: [char; 3] = ['+', '=', ' '];
 
 pub type Solution = HashMap<char, u8>;
@@ -249,13 +248,12 @@ fn input_to_terms(input: &str) -> Option<Vec<String>> {
         .map(|v| v.to_string())
         .rev()
         .collect();
-    // test if any term 1..N is longer than term 0
     if terms[1..].iter().any(|t| t.len() > terms[0].len()) {
         return None;
     }
     Some(terms)
 }
-//no duplicate chars; sorted
+
 fn terms_to_unique_chars(terms: &Vec<String>) -> Vec<char> {
     let mut unique = terms
         .iter()
@@ -281,18 +279,18 @@ fn terms_to_columns(terms: &Vec<String>) -> Vec<Vec<char>> {
     columns
 }
 
-fn evaluate_column(column: &Vec<char>, carry: u8, map: &HashMap<char, u8>) -> Option<u8> {
+fn evaluate_column(column: &Vec<char>, carry: u64, map: &HashMap<char, u8>) -> Option<u64> {
     let terms = column.iter().map(|c| map.get(c).unwrap()).copied().collect::<Vec<u8>>();
     let mut sum = carry;
     let mut carry = 0;
     for term in terms[1..].iter() {
-        sum += term;
+        sum += *term as u64;
     }
     if sum > 9 {
         carry = sum / 10;
         sum = sum % 10;
     }
-    if sum == terms[0] {
+    if sum == terms[0].into() {
         Some(carry)
     } else {
         None
@@ -336,7 +334,10 @@ fn chars_to_values(terms: &Vec<String>, map: &HashMap<char, u8>) -> Vec<String> 
 }
 
 fn available_numbers(accepted: &Vec<(char, u8)>) -> Vec<u8> {
-    (0..10).filter(|n| !accepted.iter().any(|(_, v)| *v == *n)).collect()
+    (0..10)
+        .filter(|n| !accepted.iter()
+        .any(|(_, v)| *v == *n))
+        .collect()
 }
 
 fn starting_values(chars: &Vec<char>, numbers: &Vec<u8>) -> Vec<u8> {
@@ -346,15 +347,11 @@ fn starting_values(chars: &Vec<char>, numbers: &Vec<u8>) -> Vec<u8> {
 pub fn escote_solve(input: &str) -> Option<HashMap<char, u8>> {
     let terms = input_to_terms(input)?;
     let chars = terms_to_unique_chars(&terms);
-    //let chars2 = chars.clone().into_iter().collect::<HashSet<char>>();
     let columns = terms_to_columns(&terms);
-    let p = Permutation::new(&chars);
-    //let p =Permutation2::new(&chars);
+    //let p = Permutation::new(&chars);
+    let p =Permutation2::new(&chars);
     println!("p: {:#?}", p);
     for (i, solution) in p.enumerate() {
-        if i == 18925 {
-            println!("18925: {:?}", solution);
-        }
         println!("{i}: {:?}", hashmap_to_sorted_vec_of_tuples(&solution));
         if evaluate_columns(&columns, &solution) {
             if chars_to_values(&terms, &solution).iter().any(|s| s.starts_with('0')) {
@@ -367,6 +364,7 @@ pub fn escote_solve(input: &str) -> Option<HashMap<char, u8>> {
 }
 
 pub fn solve(input: &str) -> Option<HashMap<char, u8>> {
+    //let mine = std::env::var("MINE").is_ok();
     let mine = true;
     if mine {
         escote_solve(input)

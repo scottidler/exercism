@@ -2,216 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use alphametics::*;
 
-#[test]
-#[ignore]
-fn test_permutation2() {
-    let chars = vec!['A', 'B', 'C'];
-    let p = Permutation2::new(&chars);
-    assert!(false);
-}
-
-
-/*
-#[test]
-fn test_term() {
-    let input = "ABC";
-    let t = Term::new("ABC");
-    let s = Solution::from_iter(vec![('A', 1), ('B', 2), ('C', 3)]);
-    for (i, c) in input.chars().enumerate() {
-        let v = t.evaluate(i, &s);
-        assert_eq!(v, Some(3 - i as u8));
-    }
-}
-
-#[test]
-fn test_term2() {
-    let t1 = Term::new("I");
-    let t2 = Term::new("BB");
-    let t3 = Term::new("ILL");
-    let terms = vec![t1, t2, t3];
-    let s = Solution::from_iter(vec![('I', 1), ('B', 9), ('L', 0)]);
-    let (sum, carry) = Term::add(0, &terms[..2], 0, &s);
-    assert_eq!(sum, 0);
-    assert_eq!(carry, 1);
-}
-
-#[test]
-#[ignore]
-fn test_term3() {
-    let t1 = Term::new("I");
-    let t2 = Term::new("BB");
-    let t3 = Term::new("ILL");
-    let terms = vec![t1, t2, t3];
-    let s = Solution::from_iter(vec![('I', 1), ('B', 9), ('L', 0)]);
-    let mut sum = 0;
-    let mut total = 0;
-    let mut carry = 0;
-    for p in 0..2 {
-        (sum, carry) = Term::add(1, &terms[..2], carry, &s);
-        total += sum * 10u32.pow(p as u32);
-    }
-    assert_eq!(carry, 1);
-    assert_eq!(total, 100);
-    if carry > 0 {
-        total += carry;
-    }
-    assert_eq!(total, 100);
-}
-
-#[test]
-fn test_term4() {
-    let addends = vec![
-        Term::new("I"),
-        Term::new("BB"),
-    ];
-    let result = Term::new("ILL");
-    let solution = Solution::from_iter(vec![('I', 1), ('B', 9), ('L', 0)]);
-    for place in 0..result.places() {
-        println!("place: {}", place);
-        if let Some(carry) = Term::validate(place, &addends, &result, &solution) {
-            assert_eq!(carry, 1);
-        } else {
-            assert!(false);
-        }
-    }
-}
-*/
-/*
-#[test]
-fn test_apple_banana() {
-    let banana = Banana::new(13);
-    let apple = Apple::new(&banana);
-    assert_eq!(apple.integer(), 13);
-}
-
-#[test]
-fn test_alphametic() {
-    let a = Alphametic::new("I + BB == ILL");
-    assert_eq!(a.columns().len(), 3);
-}
-
-#[test]
-fn test_column() {
-    let c1 = Column::new(vec!['L', 'B', 'I']);
-    let s = Solution::from_iter(vec![('I', 1), ('B', 9), ('L', 0)]);
-    if let Some(carry) = c1.evaluate(0, &s) {
-        assert_eq!(carry, 1);
-    } else {
-        assert!(false);
-    }
-    assert!(true);
-}
-*/
-/*
-#[test]
-fn test_permutation4() {
-    let mut p = Permutation4::new();
-    let chars = vec!['A', 'B', 'C', 'D'];
-    p.with_new_chars(chars);
-    let mut pairs: Option<Vec<(char, u8)>> = p.next()
-        .map(|v| v.into_iter().map(|(c, i)| (c, i as u8)).collect());
-    if let Some(ref mut p) = pairs {
-        p.sort();
-        assert_eq!(p, &vec![('A', 0), ('B', 1), ('C', 2), ('D', 3)]);
-    } else {
-        assert!(false);
-    }
-}
-*/
-
-/*
-#[test]
-fn test_alphametic_Permutation3() {
-    //let chars = vec!['A', 'B', 'C'];
-    //let chars = chars.into_iter().map(|c| (c, 0)).collect();
-    let chars = vec!['A', 'B', 'C'];
-    let mut p = Permutation3::new();
-    let mut pairs: Option<Vec<(char, u8)>> = p.next()
-        .map(|v| v.into_iter().map(|(c, i)| (c, i as u8)).collect());
-    if let Some(ref mut p) = pairs {
-        p.sort();
-        assert_eq!(p, &vec![('A', 0), ('B', 1), ('C', 2)]);
-    } else {
-        assert!(false);
-    }
-}
-*/
-/*
-
-#[test]
-#[ignore]
-fn test_alphametic_new() {
-    let a = Alphametic::new("I + BB == ILL");
-    let expected = vec![Term::new("I"), Term::new("BB"), Term::new("ILL")];
-    assert_eq!(a.terms, expected);
-}
-
-#[test]
-#[ignore]
-fn test_alphametic_chars1() {
-    let a = Alphametic::new("I + BB == ILL");
-    let expected = vec!['I', 'B', 'L'];
-    assert_eq!(a.chars(0), expected);
-}
-
-#[test]
-#[ignore]
-fn test_alphametic_chars2() {
-    let a = Alphametic::new("I + BB == ILL");
-    let expected = vec!['B', 'L'];
-    assert_eq!(a.chars(1), expected);
-}
-
-#[test]
-#[ignore]
-fn test_alphametic_chars3() {
-    let a = Alphametic::new("I + BB == ILL");
-    let expected = vec!['I'];
-    assert_eq!(a.chars(2), expected);
-}
-
-#[test]
-#[ignore]
-fn test_alphametic_chars4() {
-    let a = Alphametic::new("I + BB == ILL");
-    let expected = vec![];
-    assert_eq!(a.chars(3), expected);
-}
-
-#[test]
-#[ignore]
-fn test_alphametic_evaluate_place1() {
-    let mut alphametic = Alphametic::new("I + BB == ILL");
-    let place = 0;
-    let permutation = vec![('I', 1), ('B', 9), ('L', 0)];
-    alphametic.insert(&permutation);
-    let terms: Vec<&Term> = alphametic.addends2();
-    let actual = alphametic.evaulate(place, terms);
-    let expected = 10;
-    assert_eq!(actual, expected);
-}
-
-#[test]
-#[ignore]
-fn test_alphametic_evaluate_place2() {
-    let mut alphametic = Alphametic::new("I + BB == ILL");
-    println!("{}", alphametic);
-    let place = 1;
-    let permutation = vec![('I', 1), ('B', 9), ('L', 0)];
-    alphametic.insert(&permutation);
-    println!("{}", alphametic);
-    let terms: Vec<&Term> = alphametic.addends2();
-    let actual = alphametic.evaulate(place, terms);
-    let expected = 9;
-    assert_eq!(actual, expected);
-}
-*/
-
-
 fn hashmap_to_vec_of_tuples(hashmap: Option<HashMap<char, u8>>) -> Option<Vec<(char, u8)>> {
-    // let mut vec: Vec<(char, u8)> = hashmap.iter().map(|(&k, &v)| (k, v)).collect();
-    // vec.sort();
-    // vec
     hashmap.map(|hm| {
         let mut vec: Vec<(char, u8)> = hm.iter().map(|(&k, &v)| (k, v)).collect();
         vec.sort();
@@ -273,17 +64,14 @@ fn test_puzzle_with_four_letters() {
 }
 
 #[test]
-//#[ignore]
 fn test_puzzle_with_six_letters() {
     assert_alphametic_solution_eq(
         "NO + NO + TOO == LATE",
-        //&[('N', 7), ('O', 4), ('T', 9), ('L', 1), ('A', 0), ('E', 2)],
         &[('N', 7), ('O', 4), ('T', 9), ('L', 1), ('A', 0), ('E', 2)],
     );
 }
 
 #[test]
-#[ignore]
 fn test_puzzle_with_seven_letters() {
     assert_alphametic_solution_eq(
         "HE + SEES + THE == LIGHT",
@@ -300,7 +88,6 @@ fn test_puzzle_with_seven_letters() {
 }
 
 #[test]
-#[ignore]
 fn test_puzzle_with_eight_letters() {
     assert_alphametic_solution_eq(
         "SEND + MORE == MONEY",
@@ -318,7 +105,6 @@ fn test_puzzle_with_eight_letters() {
 }
 
 #[test]
-#[ignore]
 fn test_puzzle_with_ten_letters() {
     assert_alphametic_solution_eq(
         "AND + A + STRONG + OFFENSE + AS + A + GOOD == DEFENSE",
@@ -338,7 +124,6 @@ fn test_puzzle_with_ten_letters() {
 }
 
 #[test]
-#[ignore]
 fn test_puzzle_with_ten_letters_and_199_addends() {
     assert_alphametic_solution_eq(
         "THIS + A + FIRE + THEREFORE + FOR + ALL + HISTORIES + I + TELL + A + TALE + THAT + FALSIFIES + ITS + TITLE + TIS + A + LIE + THE + TALE + OF + THE + LAST + FIRE + HORSES + LATE + AFTER + THE + FIRST + FATHERS + FORESEE + THE + HORRORS + THE + LAST + FREE + TROLL + TERRIFIES + THE + HORSES + OF + FIRE + THE + TROLL + RESTS + AT + THE + HOLE + OF + LOSSES + IT + IS + THERE + THAT + SHE + STORES + ROLES + OF + LEATHERS + AFTER + SHE + SATISFIES + HER + HATE + OFF + THOSE + FEARS + A + TASTE + RISES + AS + SHE + HEARS + THE + LEAST + FAR + HORSE + THOSE + FAST + HORSES + THAT + FIRST + HEAR + THE + TROLL + FLEE + OFF + TO + THE + FOREST + THE + HORSES + THAT + ALERTS + RAISE + THE + STARES + OF + THE + OTHERS + AS + THE + TROLL + ASSAILS + AT + THE + TOTAL + SHIFT + HER + TEETH + TEAR + HOOF + OFF + TORSO + AS + THE + LAST + HORSE + FORFEITS + ITS + LIFE + THE + FIRST + FATHERS + HEAR + OF + THE + HORRORS + THEIR + FEARS + THAT + THE + FIRES + FOR + THEIR + FEASTS + ARREST + AS + THE + FIRST + FATHERS + RESETTLE + THE + LAST + OF + THE + FIRE + HORSES + THE + LAST + TROLL + HARASSES + THE + FOREST + HEART + FREE + AT + LAST + OF + THE + LAST + TROLL + ALL + OFFER + THEIR + FIRE + HEAT + TO + THE + ASSISTERS + FAR + OFF + THE + TROLL + FASTS + ITS + LIFE + SHORTER + AS + STARS + RISE + THE + HORSES + REST + SAFE + AFTER + ALL + SHARE + HOT + FISH + AS + THEIR + AFFILIATES + TAILOR + A + ROOFS + FOR + THEIR + SAFE == FORTRESSES",
