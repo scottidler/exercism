@@ -36,13 +36,14 @@ fn is_valid(map: &HashMap<char, u8>, inputs: &Vec<&str>, result: &str) -> bool {
 }
 #[derive(Debug)]
 struct Permutation {
-    letters: Vec<char>,
-    count: usize,
     max: usize,
-    current_values: Vec<u8>,
+    count: usize,
+    chars: Vec<char>,
+    values: Vec<u8>,
 }
 impl Permutation {
-    fn new(s: &HashSet<char>) -> Self {
+    //fn new(chars: &HashSet<char>) -> Self {
+    fn new(chars: &Vec<char>) -> Self {
         fn combinations(num: usize) -> usize {
             let start = 10 - num + 1;
             let mut result = 1;
@@ -52,34 +53,34 @@ impl Permutation {
             result
         }
         Self {
-            letters: s.iter().copied().collect(),
+            max: combinations(chars.len()),
             count: 0,
-            max: combinations(s.len()),
-            current_values: (0..s.len()).rev().map(|x| x as u8).collect(),
+            chars: chars.iter().copied().collect(),
+            values: (0..chars.len()).rev().map(|x| x as u8).collect(),
         }
     }
     fn find_next_combination(&mut self, index: usize) {
-        if index >= self.current_values.len() {
+        if index >= self.values.len() {
             return;
         }
-        let mut next_digit = (self.current_values[index] + 1) % 10;
+        let mut next_digit = (self.values[index] + 1) % 10;
         if next_digit == 0 {
             self.find_next_combination(index + 1);
         }
-        while self.current_values[index + 1..].contains(&next_digit) {
+        while self.values[index + 1..].contains(&next_digit) {
             next_digit = (next_digit + 1) % 10;
             if next_digit == 0 {
                 self.find_next_combination(index + 1);
             }
         }
-        self.current_values[index] = next_digit;
+        self.values[index] = next_digit;
     }
     fn next_hashmap(&mut self) -> HashMap<char, u8> {
         self.find_next_combination(0);
-        self.letters
+        self.chars
             .iter()
             .copied()
-            .zip(self.current_values.iter().copied())
+            .zip(self.values.iter().copied())
             .collect()
     }
 }
@@ -91,10 +92,10 @@ impl Iterator for Permutation {
         } else if self.count == 0 {
             self.count += 1;
             Some(
-                self.letters
+                self.chars
                     .iter()
                     .copied()
-                    .zip(self.current_values.iter().copied())
+                    .zip(self.values.iter().copied())
                     .collect(),
             )
         } else {
@@ -130,8 +131,13 @@ pub fn chibbyone_solve(input: &str) -> Option<HashMap<char, u8>> {
         insert_char_if_not_seen(s, &mut set);
     }
     // We iterate over each kind of
-    let mut perm = Permutation::new(&set);
+    let mut chars: Vec<char> = set.iter().copied().collect();
+    chars.sort();
+    let mut perm = Permutation::new(&chars);
+    println!("perm: {:#?}", perm);
+    let mut i = 0;
     perm.find(|hashmap| {
+        println!("{i}: {:?}", hashmap_to_sorted_vec_of_tuples(&hashmap)); i += 1;
         is_valid(hashmap, &input, result) && convert_to_numbers_and_check_result(&input, result, hashmap)
     })
 }
@@ -254,8 +260,9 @@ fn terms_to_unique_chars(terms: &Vec<String>) -> Vec<char> {
     let mut unique = terms
         .iter()
         .flat_map(|s| s.chars())
+        .collect::<HashSet<char>>()
+        .into_iter()
         .collect::<Vec<char>>();
-    unique.dedup();
     unique.sort();
     unique
 }
@@ -339,16 +346,19 @@ fn starting_values(chars: &Vec<char>, numbers: &Vec<u8>) -> Vec<u8> {
 pub fn escote_solve(input: &str) -> Option<HashMap<char, u8>> {
     let terms = input_to_terms(input)?;
     let chars = terms_to_unique_chars(&terms);
-    let chars2 = chars.clone().into_iter().collect::<HashSet<char>>();
+    //let chars2 = chars.clone().into_iter().collect::<HashSet<char>>();
     let columns = terms_to_columns(&terms);
-    let p = Permutation::new(&chars2);
+    let p = Permutation::new(&chars);
     //let p =Permutation2::new(&chars);
     println!("p: {:#?}", p);
     for (i, solution) in p.enumerate() {
+        if i == 18925 {
+            println!("18925: {:?}", solution);
+        }
         println!("{i}: {:?}", hashmap_to_sorted_vec_of_tuples(&solution));
         if evaluate_columns(&columns, &solution) {
             if chars_to_values(&terms, &solution).iter().any(|s| s.starts_with('0')) {
-                return None;
+                continue;
             }
             return Some(solution);
         }
@@ -357,7 +367,7 @@ pub fn escote_solve(input: &str) -> Option<HashMap<char, u8>> {
 }
 
 pub fn solve(input: &str) -> Option<HashMap<char, u8>> {
-    let mine = false;
+    let mine = true;
     if mine {
         escote_solve(input)
     } else {
