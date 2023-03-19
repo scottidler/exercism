@@ -1,7 +1,4 @@
 use std::collections::{HashMap, HashSet};
-use std::fmt;
-
-use itertools::Itertools;
 
 fn insert_char_if_not_seen(s: &str, set: &mut HashSet<char>) {
     for c in s.chars() {
@@ -37,40 +34,6 @@ fn is_valid(map: &HashMap<char, u8>, inputs: &Vec<&str>, result: &str) -> bool {
     }
     true
 }
-
-pub fn solve_chibbyone(input: &str) -> Option<HashMap<char, u8>> {
-    // The HashMap must be mutable
-    let mut set: HashSet<char> = HashSet::new();
-    // Get all the unique letters to create the hashmap
-    let input_and_result: Vec<&str> = input.split("==").collect();
-    // If any of the input or result is missing then there can be no solution and therefore we
-    // return None
-    // The input is split into a vector of &str since there could be > 1 inputs
-    let input: Vec<&str> = match input_and_result.first() {
-        Some(v) => v.split('+').map(|v| v.trim()).collect(),
-        None => {
-            return None;
-        }
-    };
-    // The result is handled as a &str since it will only be 1 result
-    let result = match input_and_result.last() {
-        Some(v) => v.trim(),
-        None => {
-            return None;
-        }
-    };
-    // There can be at most 10 entries to the hashmap since there can only be ten kinds of digits.
-    insert_char_if_not_seen(result, &mut set);
-    for s in &input {
-        insert_char_if_not_seen(s, &mut set);
-    }
-    // We iterate over each kind of
-    let mut perm = Permutation::new(&set);
-    perm.find(|hashmap| {
-        is_valid(hashmap, &input, result) && convert_to_numbers_and_check_result(&input, result, hashmap)
-    })
-}
-
 #[derive(Debug)]
 struct Permutation {
     letters: Vec<char>,
@@ -88,15 +51,8 @@ impl Permutation {
             }
             result
         }
-        // sorted vec of chars
-        let sorted = {
-            let mut v: Vec<char> = s.iter().copied().collect();
-            v.sort();
-            v
-        };
         Self {
-            //letters: s.iter().copied().collect(),
-            letters: sorted,
+            letters: s.iter().copied().collect(),
             count: 0,
             max: combinations(s.len()),
             current_values: (0..s.len()).rev().map(|x| x as u8).collect(),
@@ -147,6 +103,43 @@ impl Iterator for Permutation {
         }
     }
 }
+pub fn chibbyone_solve(input: &str) -> Option<HashMap<char, u8>> {
+    // The HashMap must be mutable
+    let mut set: HashSet<char> = HashSet::new();
+    // Get all the unique letters to create the hashmap
+    let input_and_result: Vec<&str> = input.split("==").collect();
+    // If any of the input or result is missing then there can be no solution and therefore we
+    // return None
+    // The input is split into a vector of &str since there could be > 1 inputs
+    let input: Vec<&str> = match input_and_result.first() {
+        Some(v) => v.split('+').map(|v| v.trim()).collect(),
+        None => {
+            return None;
+        }
+    };
+    // The result is handled as a &str since it will only be 1 result
+    let result = match input_and_result.last() {
+        Some(v) => v.trim(),
+        None => {
+            return None;
+        }
+    };
+    // There can be at most 10 entries to the hashmap since there can only be ten kinds of digits.
+    insert_char_if_not_seen(result, &mut set);
+    for s in &input {
+        insert_char_if_not_seen(s, &mut set);
+    }
+    // We iterate over each kind of
+    let mut perm = Permutation::new(&set);
+    perm.find(|hashmap| {
+        is_valid(hashmap, &input, result) && convert_to_numbers_and_check_result(&input, result, hashmap)
+    })
+}
+
+///////////////////////////
+///////////////////////////
+///////////////////////////
+
 #[derive(Debug)]
 pub struct Permutation2 {
     max: usize,
@@ -209,11 +202,6 @@ impl Permutation2 {
     fn next_hashmap(&mut self) -> HashMap<char, u8> {
         self.find_next_combination(0);
         self.build_hashmap()
-        // self.chars
-        //     .iter()
-        //     .copied()
-        //     .zip(self.values.iter().copied())
-        //     .collect()
     }
 }
 impl Iterator for Permutation2 {
@@ -223,20 +211,14 @@ impl Iterator for Permutation2 {
             None
         } else if self.count == 0 {
             self.count += 1;
-            Some(
-                self.build_hashmap()
-                // self.chars
-                //     .iter()
-                //     .copied()
-                //     .zip(self.values.iter().copied())
-                //     .collect(),
-            )
+            Some(self.build_hashmap())
         } else {
             self.count += 1;
             Some(self.next_hashmap())
         }
     }
 }
+use std::fmt;
 impl fmt::Display for Permutation2 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
@@ -246,7 +228,6 @@ impl fmt::Display for Permutation2 {
         )
     }
 }
-///////////////////////////////////////////////////////////////////////////////////////////////
 
 // const list of delimeters
 const DELIMITERS: [char; 3] = ['+', '=', ' '];
@@ -256,7 +237,7 @@ pub type Column = Vec<char>;
 
 fn input_to_terms(input: &str) -> Option<Vec<String>> {
     let terms: Vec<String> = input
-        .split(|c| DELIMITERS.contains(&c) )
+        .split(|c| DELIMITERS.contains(&c))
         .map(|v| v.trim())
         .filter(|v| !v.is_empty())
         .map(|v| v.to_string())
@@ -268,15 +249,15 @@ fn input_to_terms(input: &str) -> Option<Vec<String>> {
     }
     Some(terms)
 }
-//no duplicate chars
+//no duplicate chars; sorted
 fn terms_to_unique_chars(terms: &Vec<String>) -> Vec<char> {
-    terms
+    let mut unique = terms
         .iter()
         .flat_map(|s| s.chars())
-        .collect::<HashSet<char>>()
-        .into_iter()
-        .sorted()
-        .collect()
+        .collect::<Vec<char>>();
+    unique.dedup();
+    unique.sort();
+    unique
 }
 
 fn terms_to_columns(terms: &Vec<String>) -> Vec<Vec<char>> {
@@ -294,11 +275,7 @@ fn terms_to_columns(terms: &Vec<String>) -> Vec<Vec<char>> {
 }
 
 fn evaluate_column(column: &Vec<char>, carry: u8, map: &HashMap<char, u8>) -> Option<u8> {
-    let terms = column
-        .iter()
-        .map(|c| map.get(c).unwrap())
-        .copied()
-        .collect::<Vec<u8>>();
+    let terms = column.iter().map(|c| map.get(c).unwrap()).copied().collect::<Vec<u8>>();
     let mut sum = carry;
     let mut carry = 0;
     for term in terms[1..].iter() {
@@ -347,35 +324,24 @@ fn hashmap_to_sorted_vec_of_tuples(hashmap: &HashMap<char, u8>) -> Vec<(char, u8
 fn chars_to_values(terms: &Vec<String>, map: &HashMap<char, u8>) -> Vec<String> {
     terms
         .iter()
-        .map(|s| {
-            s.chars()
-                .map(|c| map.get(&c).unwrap().to_string())
-                .collect::<String>()
-        })
+        .map(|s| s.chars().map(|c| map.get(&c).unwrap().to_string()).collect::<String>())
         .collect::<Vec<String>>()
 }
 
 fn available_numbers(accepted: &Vec<(char, u8)>) -> Vec<u8> {
-    (0..10)
-        .filter(|n| !accepted.iter().any(|(_, v)| *v == *n))
-        .collect()
+    (0..10).filter(|n| !accepted.iter().any(|(_, v)| *v == *n)).collect()
 }
 
 fn starting_values(chars: &Vec<char>, numbers: &Vec<u8>) -> Vec<u8> {
-    numbers
-        .iter()
-        .take(chars.len())
-        .rev()
-        .map(|v| *v)
-        .collect::<Vec<u8>>()
+    numbers.iter().take(chars.len()).rev().map(|v| *v).collect::<Vec<u8>>()
 }
 
-pub fn solve(input: &str) -> Option<HashMap<char, u8>> {
+pub fn escote_solve(input: &str) -> Option<HashMap<char, u8>> {
     let terms = input_to_terms(input)?;
     let chars = terms_to_unique_chars(&terms);
     let chars2 = chars.clone().into_iter().collect::<HashSet<char>>();
     let columns = terms_to_columns(&terms);
-    let p =Permutation::new(&chars2);
+    let p = Permutation::new(&chars2);
     //let p =Permutation2::new(&chars);
     println!("p: {:#?}", p);
     for (i, solution) in p.enumerate() {
@@ -388,4 +354,13 @@ pub fn solve(input: &str) -> Option<HashMap<char, u8>> {
         }
     }
     None
+}
+
+pub fn solve(input: &str) -> Option<HashMap<char, u8>> {
+    let mine = false;
+    if mine {
+        escote_solve(input)
+    } else {
+        chibbyone_solve(input)
+    }
 }
