@@ -53,16 +53,6 @@ impl Puzzle {
                     .collect::<Column>()
             })
             .collect::<Vec<Column>>();
-        // let mut columns: Vec<Column> = Vec::new();
-        // for index in 0..terms[0].len() {
-        //     let mut column = Vec::new();
-        //     for term in terms.iter() {
-        //         if let Some(c) = term.iter().nth(index) {
-        //             column.push(*c);
-        //         }
-        //     }
-        //     columns.push(column);
-        // }
         Some(Self { terms, columns })
     }
     fn column(&self, index: usize, unique: bool) -> Option<Column> {
