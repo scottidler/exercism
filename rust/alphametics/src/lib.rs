@@ -43,16 +43,26 @@ impl Puzzle {
         if terms.iter().skip(1).any(|term| term.len() > terms[0].len()) {
             return None;
         }
-        let mut columns: Vec<Column> = Vec::new();
-        for index in 0..terms[0].len() {
-            let mut column = Vec::new();
-            for term in terms.iter() {
-                if let Some(c) = term.iter().nth(index) {
-                    column.push(*c);
-                }
-            }
-            columns.push(column);
-        }
+        let columns = (0..terms[0].len())
+            .map(|index| {
+                terms
+                    .iter()
+                    .map(|term| term.iter().nth(index))
+                    .filter(|c| c.is_some())
+                    .map(|c| *c.unwrap())
+                    .collect::<Column>()
+            })
+            .collect::<Vec<Column>>();
+        // let mut columns: Vec<Column> = Vec::new();
+        // for index in 0..terms[0].len() {
+        //     let mut column = Vec::new();
+        //     for term in terms.iter() {
+        //         if let Some(c) = term.iter().nth(index) {
+        //             column.push(*c);
+        //         }
+        //     }
+        //     columns.push(column);
+        // }
         Some(Self { terms, columns })
     }
     fn column(&self, index: usize, unique: bool) -> Option<Column> {
