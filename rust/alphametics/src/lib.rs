@@ -25,10 +25,17 @@ fn column_to_value(column: &Column, solution: &Solution) -> Value {
         .collect::<Value>()
 }
 
+fn hashmap_to_sorted_vec_of_tuples(hashmap: &HashMap<char, u8>) -> Vec<(char, u8)> {
+    let mut vec: Vec<(char, u8)> = hashmap.iter().map(|(k, v)| (*k, *v)).collect();
+    vec.sort_by(|a, b| a.0.cmp(&b.0));
+    vec
+}
+
 #[derive(Debug)]
 struct Puzzle {
     terms: Vec<Term>,
     columns: Vec<Column>,
+    leading: Vec<char>,
 }
 
 impl Puzzle {
@@ -43,17 +50,22 @@ impl Puzzle {
         if terms.iter().skip(1).any(|term| term.len() > terms[0].len()) {
             return None;
         }
-        let columns = (0..terms[0].len())
+        let columns: Vec<Column> = (0..terms[0].len())
             .map(|index| {
                 terms
                     .iter()
                     .map(|term| term.iter().nth(index))
                     .filter(|c| c.is_some())
                     .map(|c| *c.unwrap())
-                    .collect::<Column>()
+                    .collect()
             })
             .collect::<Vec<Column>>();
-        Some(Self { terms, columns })
+        let leading: Vec<char> = terms.iter().map(|term| term.last().unwrap()).copied().collect();
+        Some(Self {
+            terms,
+            columns,
+            leading,
+        })
     }
     fn column(&self, index: usize, unique: bool) -> Option<Column> {
         let mut column: Column = self.columns.get(index)?.iter().copied().collect();
@@ -64,14 +76,21 @@ impl Puzzle {
         Some(column)
     }
     fn any_term_with_leading_zero(&self, solution: &Solution) -> bool {
-        self.terms
-            .iter()
-            .any(|term| solution.get(term.last().unwrap()).unwrap() == &0)
+        self.leading.iter().any(|c| {
+            if let Some(value) = solution.get(c) {
+                *value == 0
+            } else {
+                false
+            }
+        })
     }
     fn is_valid(&self, solution: &Solution) -> bool {
         !self.any_term_with_leading_zero(solution)
     }
     pub fn evaluate_column(&self, index: usize, carry: u64, solution: &Solution) -> Option<u64> {
+        if self.any_term_with_leading_zero(solution) {
+            return None;
+        }
         let column = self.column(index, false)?;
         let value: Vec<u8> = column_to_value(&column, solution);
         let mut sum = carry;
@@ -151,8 +170,13 @@ impl Permutor {
             .collect::<Vec<char>>();
         chars.dedup();
         chars.sort();
-        let indices = (0..chars.len()).rev().collect();
-        let mut accepted = solution.iter().map(|(c, v)| (*c, *v)).collect::<Vec<(char, u8)>>();
+        let indices = (0..chars.len())
+            .rev()
+            .collect();
+        let mut accepted = solution
+            .iter()
+            .map(|(c, v)| (*c, *v))
+            .collect::<Vec<(char, u8)>>();
         accepted.sort();
         let available = (0..10)
             .filter(|i| !accepted.iter().any(|(_, v)| v == i))
@@ -172,7 +196,10 @@ impl Permutor {
         let solution = self.accepted.clone();
         // zip the chars and values together
         // values are the indices of the available numbers
-        let values = self.indices.iter().map(|i| self.available[*i]).collect::<Vec<u8>>();
+        let values = self.indices
+            .iter()
+            .map(|i| self.available[*i])
+            .collect::<Vec<u8>>();
         solution
             .into_iter()
             .chain(self.chars.iter().copied().zip(values.iter().copied()))
