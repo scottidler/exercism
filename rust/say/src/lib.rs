@@ -30,7 +30,7 @@ pub fn encode(n: u64) -> String {
         n if n > 50 && n < 60 => "fifty-".to_string() + &encode(n - 50),
         60 => "sixty".to_string(),
         n if n > 60 && n < 70 => "sixty-".to_string() + &encode(n - 60),
-        70 => "seventy".to_string(),    
+        70 => "seventy".to_string(),
         n if n > 70 && n < 80 => "seventy-".to_string() + &encode(n - 70),
         80 => "eighty".to_string(),
         n if n > 80 && n < 90 => "eighty-".to_string() + &encode(n - 80),

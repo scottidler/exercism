@@ -40,7 +40,7 @@ pub fn tally(results: &str) -> String {
         .lines()
         .map(|line| line.split(';').collect::<Vec<&str>>())
         .map(|line| (line[0].to_string(), line[1].to_string(), MatchResult::new(&line[2])))
-        .collect::<Vec<(String, String, MatchResult)>>();   
+        .collect::<Vec<(String, String, MatchResult)>>();
     let mut results = HashMap::<String, Vec<MatchResult>>::new();
     for (team1, team2, result) in matches {
         results.entry(team1.clone()).or_insert(vec![]).push(result.clone());
@@ -50,11 +50,11 @@ pub fn tally(results: &str) -> String {
     let mut data: Vec<(String, u32, u32, u32, u32, u32)> = vec![];
     for (team, result) in results {
         data.push((
-            team, 
-            result.len() as u32, 
-            result.iter().filter(|r| **r == MatchResult::Win).count() as u32, 
-            result.iter().filter(|r| **r == MatchResult::Draw).count() as u32, 
-            result.iter().filter(|r| **r == MatchResult::Loss).count() as u32, 
+            team,
+            result.len() as u32,
+            result.iter().filter(|r| **r == MatchResult::Win).count() as u32,
+            result.iter().filter(|r| **r == MatchResult::Draw).count() as u32,
+            result.iter().filter(|r| **r == MatchResult::Loss).count() as u32,
             result.iter().map(|r| r.points()).sum::<u32>()));
     }
     data.sort_by(|a, b| b.5.cmp(&a.5).then(a.0.cmp(&b.0)));

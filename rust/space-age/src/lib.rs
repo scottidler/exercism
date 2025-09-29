@@ -27,7 +27,7 @@ macro_rules! planet {
                 d.0 / $e
             }
         }
-        
+
     };
 }
 

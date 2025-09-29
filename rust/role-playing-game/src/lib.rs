@@ -27,7 +27,7 @@ impl Player {
             }
         } else {
             self.health = self.health.saturating_sub(mana_cost);
-        } 
+        }
         damage
     }
 }

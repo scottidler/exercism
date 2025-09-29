@@ -1,9 +1,9 @@
 use std::collections::HashMap;
 
 const NUCLEOTIDES: [char; 4] = [
-    'A', 
-    'C', 
-    'G', 
+    'A',
+    'C',
+    'G',
     'T',
 ];
 

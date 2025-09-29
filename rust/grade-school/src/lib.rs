@@ -20,7 +20,7 @@ impl Student {
 // of this exercise.
 #[allow(clippy::new_without_default)]
 pub struct School {
-    students: Vec<Student>,    
+    students: Vec<Student>,
 }
 
 impl School {
@@ -29,7 +29,7 @@ impl School {
     }
 
     pub fn add(&mut self, grade: u32, student: &str) {
-        self.students.push(Student::new(student, grade));  
+        self.students.push(Student::new(student, grade));
     }
 
     pub fn grades(&self) -> Vec<u32> {

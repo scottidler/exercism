@@ -2,7 +2,7 @@
 ///
 /// Note the type signature: this function should return _the same_ reference to
 /// the winning hand(s) as were passed in, not reconstructed strings which happen to be equal.
-/// 
+///
 use std::collections::HashMap;
 use std::fmt::{Display, Formatter, Result};
 use core::cmp::Ordering;
@@ -116,7 +116,7 @@ fn rank_hand(cards: &Vec<Card>) -> Rank {
             rank = Rank::StraightFlush(r);
         } else {
             rank = Rank::Straight(r);
-        }   
+        }
     } else if is_flush {
         rank = Rank::Flush(cards[0].rank);
     } else if rank_count.values().any(|&v| v == 5) {
